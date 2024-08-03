@@ -1,0 +1,39 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            Int            @id @default(autoincrement())
+  name          String         @map("name")
+  borrowedBooks BorrowedBook[]
+
+  @@map("user")
+}
+
+model Book {
+  id            Int            @id @default(autoincrement())
+  name          String         @map("name")
+  averageScore  Decimal?       @map("average_score") @db.Decimal(3, 1)
+  borrowedBooks BorrowedBook[]
+
+  @@map("book")
+}
+
+model BorrowedBook {
+  id         Int       @id @default(autoincrement())
+  userId     Int       @map("user_id")
+  bookId     Int       @map("book_id")
+  borrowDate DateTime  @map("borrow_date")
+  returnDate DateTime? @map("return_date")
+  score      Int?      @map("score")
+
+  user User @relation(fields: [userId], references: [id])
+  book Book @relation(fields: [bookId], references: [id])
+
+  @@map("borrowed_book")
+}

@@ -1,0 +1,43 @@
+version: '3'
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - '3000:3000'
+    environment:
+      NODE_ENV: production
+    depends_on:
+      - db
+      - migrate
+    command: pm2-runtime dist/src/app.js
+    volumes:
+      - /opt/library/library-api-properties/.env:/usr/src/app/.env
+      - /opt/library/library-api-properties/pm2.yaml:/usr/src/app/api/pm2.yaml
+
+  db:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: mydatabase
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    ports:
+      - '5431:5432'
+
+  migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - db
+    command: |
+      npx prisma migrate deploy && \
+      npx prisma db seed
+    volumes:
+      - /opt/library/library-api-properties/.env:/usr/src/app/.env
+
+volumes:
+  db-data:
